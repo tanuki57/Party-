@@ -1,0 +1,735 @@
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: Arial, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+    background: #111;
+    color: #fff;
+}
+
+button,
+input {
+    font: inherit;
+}
+
+button {
+    border: none;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.screen {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    background: #111;
+}
+
+.screen.active {
+    display: flex;
+}
+
+
+/* =========================
+   共通
+========================= */
+
+.content {
+    width: min(90%, 500px);
+    text-align: center;
+}
+
+h1 {
+    margin: 10px 0;
+    font-size: clamp(32px, 9vw, 56px);
+}
+
+h2 {
+    margin: 10px 0 20px;
+    font-size: clamp(26px, 7vw, 40px);
+}
+
+p {
+    font-size: 18px;
+    line-height: 1.7;
+}
+
+.sub-text {
+    color: #bbb;
+    font-size: 15px;
+}
+
+
+/* =========================
+   タイトル
+========================= */
+
+.title-content {
+    width: 90%;
+    max-width: 500px;
+    text-align: center;
+}
+
+.bomb-icon {
+    font-size: 80px;
+    animation: bombFloat 1.5s infinite ease-in-out;
+}
+
+.bomb-icon.small {
+    font-size: 55px;
+}
+
+@keyframes bombFloat {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.title-content p {
+    color: #ccc;
+    margin-bottom: 40px;
+}
+
+
+/* =========================
+   ボタン
+========================= */
+
+.main-button {
+    width: 100%;
+    max-width: 360px;
+    min-height: 60px;
+    margin: 10px auto;
+    display: block;
+
+    border-radius: 15px;
+
+    background: #fff;
+    color: #111;
+
+    font-size: 20px;
+    font-weight: bold;
+
+    box-shadow: 0 5px 0 #777;
+
+    transition: transform 0.08s;
+}
+
+.main-button:active {
+    transform: translateY(4px);
+    box-shadow: 0 1px 0 #777;
+}
+
+.back-button {
+    width: 100%;
+    max-width: 360px;
+    min-height: 50px;
+    margin: 10px auto;
+
+    background: transparent;
+    color: #aaa;
+
+    font-size: 16px;
+}
+
+
+/* =========================
+   人数選択
+========================= */
+
+.count-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin: 30px 0;
+}
+
+.count-button {
+    min-height: 70px;
+    border-radius: 16px;
+
+    background: #222;
+    border: 2px solid #444;
+
+    color: #fff;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.count-button:active {
+    background: #333;
+    transform: scale(0.98);
+}
+
+
+/* =========================
+   名前入力
+========================= */
+
+#nameInputs {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 25px 0;
+}
+
+.name-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.name-label {
+    width: 100px;
+    text-align: left;
+    font-size: 15px;
+    color: #ccc;
+}
+
+.name-input {
+    flex: 1;
+    min-width: 0;
+    height: 50px;
+
+    border: 2px solid #444;
+    border-radius: 12px;
+
+    background: #222;
+    color: #fff;
+
+    padding: 0 15px;
+    font-size: 18px;
+
+    outline: none;
+}
+
+.name-input:focus {
+    border-color: #fff;
+}
+
+
+/* =========================
+   座席
+========================= */
+
+.seat-content {
+    width: min(94%, 550px);
+}
+
+.seat-map {
+    position: relative;
+
+    width: min(85vw, 420px);
+    height: min(85vw, 420px);
+
+    margin: 25px auto;
+}
+
+.phone {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    transform: translate(-50%, -50%);
+
+    width: 90px;
+    height: 140px;
+
+    border: 4px solid #777;
+    border-radius: 18px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 35px;
+
+    background: #181818;
+}
+
+.seat {
+    position: absolute;
+
+    width: 90px;
+    height: 55px;
+
+    border-radius: 15px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: #222;
+    border: 2px solid #555;
+
+    font-weight: bold;
+    font-size: 15px;
+}
+
+.seat.top {
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.seat.right {
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.seat.bottom {
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.seat.left {
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.turn-order {
+    margin: 10px auto 25px;
+    padding: 12px;
+
+    border-radius: 12px;
+    background: #1d1d1d;
+
+    font-size: 14px;
+    color: #ccc;
+}
+
+
+/* =========================
+   ルール
+========================= */
+
+.rules {
+    text-align: left;
+
+    width: 100%;
+    max-width: 420px;
+
+    margin: 20px auto 30px;
+    padding: 20px;
+
+    border-radius: 15px;
+
+    background: #1d1d1d;
+}
+
+.rules p {
+    margin: 9px 0;
+    font-size: 15px;
+}
+
+
+/* =========================
+   プレイヤー交代
+========================= */
+
+.pass-icon {
+    font-size: 70px;
+    margin-bottom: 15px;
+}
+
+.pass-label {
+    color: #aaa;
+    font-size: 16px;
+    margin-bottom: 0;
+}
+
+#passPlayerName {
+    font-size: clamp(34px, 10vw, 50px);
+}
+
+
+/* =========================
+   ゲーム
+========================= */
+
+#gameScreen {
+    overflow: hidden;
+}
+
+#gameRotator {
+    width: 100%;
+    height: 100%;
+
+    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.game-ui {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 20px;
+
+    background: #111;
+}
+
+.player-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    gap: 10px;
+
+    font-size: 24px;
+    font-weight: bold;
+
+    min-height: 50px;
+}
+
+.timer-area {
+    width: 100%;
+    max-width: 550px;
+    margin: 20px auto;
+}
+
+#timerText {
+    text-align: center;
+
+    font-size: clamp(48px, 14vw, 90px);
+    font-weight: bold;
+
+    font-variant-numeric: tabular-nums;
+}
+
+.timer-bar {
+    width: 100%;
+    height: 12px;
+
+    margin-top: 10px;
+
+    background: #333;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+#timerBar {
+    width: 100%;
+    height: 100%;
+
+    background: #fff;
+
+    transition: width 0.05s linear;
+}
+
+.mission-area {
+    flex: 1;
+
+    width: 100%;
+    max-width: 550px;
+
+    margin: 10px auto;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.mission-label {
+    color: #999;
+
+    font-size: 14px;
+    letter-spacing: 3px;
+
+    margin-bottom: 10px;
+}
+
+.mission-text {
+    font-size: 20px;
+    font-weight: bold;
+
+    margin-bottom: 20px;
+}
+
+.code-display {
+    font-size: 45px;
+    letter-spacing: 10px;
+
+    font-weight: bold;
+
+    margin-bottom: 20px;
+}
+
+.code-input {
+    width: min(80%, 300px);
+    height: 60px;
+
+    border: 2px solid #555;
+    border-radius: 14px;
+
+    background: #222;
+    color: #fff;
+
+    text-align: center;
+
+    font-size: 25px;
+    letter-spacing: 5px;
+
+    outline: none;
+}
+
+.code-input:focus {
+    border-color: #fff;
+}
+
+.answer-button {
+    width: min(80%, 300px);
+    height: 55px;
+
+    margin-top: 12px;
+
+    border-radius: 14px;
+
+    background: #fff;
+    color: #111;
+
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.message {
+    min-height: 30px;
+
+    margin-top: 12px;
+
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.status-area {
+    text-align: center;
+
+    color: #aaa;
+
+    font-size: 14px;
+
+    padding-bottom: 10px;
+}
+
+
+/* =========================
+   成功
+========================= */
+
+.result-animation {
+    animation: successPop 0.5s ease-out;
+}
+
+.success-icon {
+    font-size: 80px;
+}
+
+.bonus {
+    font-size: 60px;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+@keyframes successPop {
+    0% {
+        transform: scale(0.6);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+
+/* =========================
+   爆発
+========================= */
+
+.explosion-screen {
+    background: #111;
+}
+
+.explosion-content {
+    text-align: center;
+    animation: explosionShake 0.6s ease-out;
+}
+
+.explosion {
+    font-size: 130px;
+
+    animation: explosionPop 0.5s ease-out;
+}
+
+.explosion-content h1 {
+    font-size: 70px;
+    margin: 0;
+}
+
+.explosion-content p {
+    font-size: 26px;
+    font-weight: bold;
+}
+
+@keyframes explosionPop {
+    0% {
+        transform: scale(0);
+    }
+
+    60% {
+        transform: scale(1.3);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes explosionShake {
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    20% {
+        transform: translateX(-12px);
+    }
+
+    40% {
+        transform: translateX(12px);
+    }
+
+    60% {
+        transform: translateX(-8px);
+    }
+
+    80% {
+        transform: translateX(8px);
+    }
+}
+
+
+/* =========================
+   結果
+========================= */
+
+.trophy {
+    font-size: 80px;
+}
+
+.winner {
+    margin: 15px 0 30px;
+
+    font-size: clamp(30px, 9vw, 48px);
+    font-weight: bold;
+}
+
+.ranking {
+    width: 100%;
+    max-width: 400px;
+
+    margin: 0 auto 30px;
+}
+
+.rank-row {
+    display: flex;
+    align-items: center;
+
+    min-height: 55px;
+
+    margin: 8px 0;
+    padding: 0 15px;
+
+    border-radius: 12px;
+
+    background: #1d1d1d;
+
+    font-size: 17px;
+}
+
+.rank-number {
+    width: 50px;
+    font-size: 22px;
+}
+
+.rank-name {
+    flex: 1;
+    text-align: left;
+}
+
+.rank-status {
+    color: #aaa;
+    font-size: 13px;
+}
+
+
+/* =========================
+   スマホ調整
+========================= */
+
+@media (max-height: 650px) {
+
+    .bomb-icon {
+        font-size: 55px;
+    }
+
+    .title-content p {
+        margin-bottom: 20px;
+    }
+
+    h2 {
+        margin-bottom: 10px;
+    }
+
+    .seat-map {
+        width: 70vw;
+        height: 70vw;
+        margin: 10px auto;
+    }
+
+    .rules {
+        margin: 10px auto 15px;
+        padding: 12px;
+    }
+
+    .rules p {
+        margin: 5px 0;
+        font-size: 13px;
+    }
+
+    .timer-area {
+        margin: 10px auto;
+    }
+
+    .mission-area {
+        margin: 0 auto;
+    }
+
+    .code-display {
+        margin-bottom: 10px;
+    }
+}
