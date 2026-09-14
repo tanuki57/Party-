@@ -1,72 +1,131 @@
-/* =====================================================
-   爆弾リレー Ver.1
-===================================================== */
+/* ==================================================
+   爆弾リレー
+   Version 2.0
+================================================== */
 
 
-/* =====================================================
-   画面
-===================================================== */
+/* ==================================================
+   画面管理
+================================================== */
 
-const screens = {
-    title: document.getElementById("titleScreen"),
-    playerCount: document.getElementById("playerCountScreen"),
-    name: document.getElementById("nameScreen"),
-    seat: document.getElementById("seatScreen"),
-    rule: document.getElementById("ruleScreen"),
-    pass: document.getElementById("passScreen"),
-    game: document.getElementById("gameScreen"),
-    success: document.getElementById("successScreen"),
-    explosion: document.getElementById("explosionScreen"),
-    result: document.getElementById("resultScreen")
-};
+const screens = document.querySelectorAll(".screen");
 
-
-function showScreen(screen) {
-
-    Object.values(screens).forEach(s => {
-        s.classList.remove("active");
+function showScreen(id) {
+    screens.forEach(screen => {
+        screen.classList.remove("active");
     });
 
-    screen.classList.add("active");
+    document.getElementById(id).classList.add("active");
 }
 
 
-/* =====================================================
-   プレイヤー
-===================================================== */
+/* ==================================================
+   ゲームデータ
+================================================== */
+
+let gameMode = null;
 
 let playerCount = 0;
 let players = [];
 
 let currentPlayerIndex = 0;
 
-let rotation = 0;
-
 let timer = 10;
-const START_TIME = 10;
-const MAX_TIME = 15;
-
 let timerInterval = null;
 
 let currentCode = "";
+let currentInput = "";
 
-let clearCount = 0;
+let gameRunning = false;
+let inputLocked = false;
+
+let rotation = 0;
+
+const MAX_TIME = 15;
+const START_TIME = 10;
 
 
-/* =====================================================
-   タイトル → 人数選択
-===================================================== */
+/* ==================================================
+   エンドレス
+================================================== */
 
-document.getElementById("startButton").addEventListener("click", () => {
+let endlessTimer = 10;
+let endlessTimerInterval = null;
 
-    showScreen(screens.playerCount);
+let endlessCode = "";
+let endlessInput = "";
+
+let endlessScore = 0;
+let endlessRunning = false;
+let endlessInputLocked = false;
+
+let endlessBest = Number(
+    localStorage.getItem("bombRelayEndlessBest") || 0
+);
+
+
+/* ==================================================
+   タイトル
+================================================== */
+
+document.getElementById("multiModeButton").addEventListener("click", () => {
+
+    gameMode = "multi";
+
+    showScreen("playerCountScreen");
+});
+
+
+document.getElementById("endlessModeButton").addEventListener("click", () => {
+
+    gameMode = "endless";
+
+    document.getElementById("endlessBestStart").textContent =
+        endlessBest;
+
+    showScreen("endlessStartScreen");
+});
+
+
+/* ==================================================
+   戻る
+================================================== */
+
+document.getElementById("backToTitleButton").addEventListener("click", () => {
+
+    showScreen("titleScreen");
 
 });
 
 
-/* =====================================================
+document.getElementById("endlessBackButton").addEventListener("click", () => {
+
+    showScreen("titleScreen");
+
+});
+
+
+document.getElementById("titleButton").addEventListener("click", () => {
+
+    stopTimer();
+
+    showScreen("titleScreen");
+
+});
+
+
+document.getElementById("endlessTitleButton").addEventListener("click", () => {
+
+    stopEndlessTimer();
+
+    showScreen("titleScreen");
+
+});
+
+
+/* ==================================================
    人数選択
-===================================================== */
+================================================== */
 
 document.querySelectorAll(".count-button").forEach(button => {
 
@@ -76,68 +135,50 @@ document.querySelectorAll(".count-button").forEach(button => {
 
         createNameInputs();
 
-        showScreen(screens.name);
+        showScreen("nameScreen");
 
     });
 
 });
 
 
-/* =====================================================
-   人数選択に戻る
-===================================================== */
-
-document.getElementById("countBackButton").addEventListener("click", () => {
-
-    showScreen(screens.title);
-
-});
-
-
-/* =====================================================
+/* ==================================================
    名前入力欄作成
-===================================================== */
+================================================== */
 
 function createNameInputs() {
 
-    const container = document.getElementById("nameInputs");
+    const container =
+        document.getElementById("nameInputs");
 
     container.innerHTML = "";
 
     for (let i = 0; i < playerCount; i++) {
 
-        const row = document.createElement("div");
-        row.className = "name-row";
+        const input =
+            document.createElement("input");
 
-        const label = document.createElement("div");
-        label.className = "name-label";
-        label.textContent = `プレイヤー${i + 1}`;
-
-        const input = document.createElement("input");
         input.className = "name-input";
-        input.type = "text";
-        input.maxLength = 10;
         input.placeholder = `プレイヤー${i + 1}`;
-
+        input.maxLength = 10;
         input.dataset.index = i;
 
-        row.appendChild(label);
-        row.appendChild(input);
-
-        container.appendChild(row);
+        container.appendChild(input);
     }
+
 }
 
 
-/* =====================================================
-   名前 → 座席
-===================================================== */
+/* ==================================================
+   名前決定
+================================================== */
 
 document.getElementById("nameNextButton").addEventListener("click", () => {
 
-    const inputs = document.querySelectorAll(".name-input");
-
     players = [];
+
+    const inputs =
+        document.querySelectorAll(".name-input");
 
     inputs.forEach((input, index) => {
 
@@ -150,50 +191,41 @@ document.getElementById("nameNextButton").addEventListener("click", () => {
         players.push({
             name: name,
             alive: true,
-            clears: 0
+            eliminatedRank: null
         });
 
     });
 
     createSeatMap();
 
-    showScreen(screens.seat);
+    showScreen("seatScreen");
 
 });
 
 
-/* =====================================================
-   名前画面に戻る
-===================================================== */
-
-document.getElementById("nameBackButton").addEventListener("click", () => {
-
-    showScreen(screens.playerCount);
-
-});
-
-
-/* =====================================================
-   座席配置
-===================================================== */
+/* ==================================================
+   座席マップ
+================================================== */
 
 function createSeatMap() {
 
-    const top = document.getElementById("seatTop");
-    const right = document.getElementById("seatRight");
-    const bottom = document.getElementById("seatBottom");
-    const left = document.getElementById("seatLeft");
+    const top =
+        document.getElementById("seatTop");
+
+    const right =
+        document.getElementById("seatRight");
+
+    const bottom =
+        document.getElementById("seatBottom");
+
+    const left =
+        document.getElementById("seatLeft");
+
 
     top.textContent = "";
     right.textContent = "";
     bottom.textContent = "";
     left.textContent = "";
-
-    const seats = [top, right, bottom, left];
-
-    seats.forEach(seat => {
-        seat.style.display = "none";
-    });
 
 
     /*
@@ -212,13 +244,14 @@ function createSeatMap() {
         top.textContent = players[0].name;
         bottom.textContent = players[1].name;
 
+        right.style.display = "none";
+        left.style.display = "none";
         top.style.display = "flex";
         bottom.style.display = "flex";
 
     }
 
-
-    if (playerCount === 3) {
+    else if (playerCount === 3) {
 
         top.textContent = players[0].name;
         right.textContent = players[1].name;
@@ -227,576 +260,981 @@ function createSeatMap() {
         top.style.display = "flex";
         right.style.display = "flex";
         left.style.display = "flex";
+        bottom.style.display = "none";
 
     }
 
-
-    if (playerCount === 4) {
+    else {
 
         top.textContent = players[0].name;
         right.textContent = players[1].name;
         bottom.textContent = players[2].name;
         left.textContent = players[3].name;
 
-        seats.forEach(seat => {
-            seat.style.display = "flex";
-        });
+        top.style.display = "flex";
+        right.style.display = "flex";
+        bottom.style.display = "flex";
+        left.style.display = "flex";
+
+    }
+
+}
+
+
+/* ==================================================
+   座席確認
+================================================== */
+
+document.getElementById("seatNextButton").addEventListener("click", () => {
+
+    showScreen("ruleScreen");
+
+});
+
+
+/* ==================================================
+   ルール → 最初の番
+================================================== */
+
+document.getElementById("ruleNextButton").addEventListener("click", () => {
+
+    currentPlayerIndex = 0;
+
+    setRotationForPlayer(currentPlayerIndex);
+
+    document.getElementById("firstTurnText").textContent =
+        `${players[currentPlayerIndex].name}さんの番！`;
+
+    showScreen("firstTurnScreen");
+
+});
+
+
+/* ==================================================
+   最初のスタート
+================================================== */
+
+document.getElementById("firstTurnStartButton").addEventListener("click", () => {
+
+    timer = START_TIME;
+
+    gameRunning = true;
+
+    startPlayerTurn();
+
+});
+
+
+/* ==================================================
+   プレイヤーの座席に合わせて回転
+================================================== */
+
+function getPlayerRotation(index) {
+
+    /*
+       上 = 0°
+       右 = 90°
+       下 = 180°
+       左 = 270°
+
+       3人の場合もこの4方向だけを使用。
+       斜めにはならない。
+    */
+
+    if (playerCount === 2) {
+
+        if (index === 0) return 0;
+        if (index === 1) return 180;
 
     }
 
 
-    createTurnOrder();
+    if (playerCount === 3) {
+
+        if (index === 0) return 0;
+        if (index === 1) return 90;
+        if (index === 2) return 270;
+
+    }
+
+
+    if (playerCount === 4) {
+
+        if (index === 0) return 0;
+        if (index === 1) return 90;
+        if (index === 2) return 180;
+        if (index === 3) return 270;
+
+    }
+
+    return 0;
+}
+
+
+function setRotationForPlayer(index) {
+
+    rotation = getPlayerRotation(index);
+
+    document.getElementById("gameScreen").style.transform =
+        `rotate(${rotation}deg)`;
 
 }
 
 
-/* =====================================================
-   順番表示
-===================================================== */
+/* ==================================================
+   プレイヤーの番開始
+================================================== */
 
-function createTurnOrder() {
+function startPlayerTurn() {
 
-    const order = document.getElementById("turnOrder");
+    inputLocked = false;
 
-    const names = players.map(player => player.name);
-
-    order.textContent =
-        "順番： " + names.join(" → ") + " → " + names[0];
-
-}
-
-
-/* =====================================================
-   座席 → ルール
-===================================================== */
-
-document.getElementById("seatNextButton").addEventListener("click", () => {
-
-    showScreen(screens.rule);
-
-});
-
-
-/* =====================================================
-   ゲーム開始
-===================================================== */
-
-document.getElementById("gameStartButton").addEventListener("click", () => {
-
-    currentPlayerIndex = 0;
-
-    clearCount = 0;
-
-    rotation = 0;
-
-    players.forEach(player => {
-        player.alive = true;
-        player.clears = 0;
-    });
-
-    setRotation(0);
-
-    showPassScreen();
-
-});
-
-
-/* =====================================================
-   プレイヤー交代画面
-===================================================== */
-
-function showPassScreen() {
-
-    const player = players[currentPlayerIndex];
-
-    document.getElementById("passPlayerName").textContent =
-        player.name + "さんの番！";
-
-    showScreen(screens.pass);
-
-}
-
-
-/* =====================================================
-   爆弾を受け取る
-===================================================== */
-
-document.getElementById("receiveButton").addEventListener("click", () => {
-
-    startBomb();
-
-});
-
-
-/* =====================================================
-   爆弾スタート
-===================================================== */
-
-function startBomb() {
-
-    timer = START_TIME;
-
-    generateCode();
-
-    updateTimer();
-
-    showScreen(screens.game);
+    currentInput = "";
 
     document.getElementById("currentPlayerName").textContent =
         players[currentPlayerIndex].name;
 
-    document.getElementById("clearCount").textContent =
-        clearCount;
+    updateTimerDisplay();
 
-    document.getElementById("message").textContent = "";
+    generateMission();
 
-    document.getElementById("codeInput").value = "";
+    showScreen("gameScreen");
 
     startTimer();
 
 }
 
 
-/* =====================================================
-   タイマー
-===================================================== */
+/* ==================================================
+   ミッションシステム
+================================================== */
+
+/*
+   今は4桁コードミッション。
+
+   後から、
+
+   generateNumberMission()
+   generateCalculationMission()
+   generateMemoryMission()
+
+   などを追加して、
+
+   generateMission()
+
+   の中でランダムに呼べば
+   ミッションを増やせる構造。
+*/
+
+function generateMission() {
+
+    generateCodeMission();
+
+}
+
+
+/* ==================================================
+   4桁コードミッション
+================================================== */
+
+function generateCodeMission() {
+
+    currentCode =
+        Math.floor(1000 + Math.random() * 9000)
+        .toString();
+
+    currentInput = "";
+
+    document.getElementById("codeDisplay").textContent =
+        currentCode;
+
+    updateInputDisplay();
+
+}
+
+
+/* ==================================================
+   入力表示
+================================================== */
+
+function updateInputDisplay() {
+
+    let display = "";
+
+    for (let i = 0; i < 4; i++) {
+
+        if (currentInput[i]) {
+            display += currentInput[i];
+        } else {
+            display += "_";
+        }
+
+    }
+
+    document.getElementById("inputDisplay").textContent =
+        display;
+
+}
+
+
+/* ==================================================
+   キーパッド
+================================================== */
+
+document.querySelectorAll(".key-button").forEach(button => {
+
+    button.addEventListener("click", () => {
+
+        const key = button.dataset.key;
+
+        handleKey(key);
+
+    });
+
+});
+
+
+function handleKey(key) {
+
+    if (!gameRunning || inputLocked) {
+        return;
+    }
+
+
+    if (key === "backspace") {
+
+        currentInput =
+            currentInput.slice(0, -1);
+
+        updateInputDisplay();
+
+        return;
+    }
+
+
+    if (currentInput.length >= 4) {
+        return;
+    }
+
+
+    currentInput += key;
+
+    updateInputDisplay();
+
+}
+
+
+/* ==================================================
+   答え確認
+================================================== */
+
+document.getElementById("confirmButton").addEventListener("click", () => {
+
+    if (!gameRunning || inputLocked) {
+        return;
+    }
+
+    if (currentInput.length !== 4) {
+        return;
+    }
+
+
+    if (currentInput === currentCode) {
+
+        missionSuccess();
+
+    }
+
+});
+
+
+/* ==================================================
+   タイマー開始
+================================================== */
 
 function startTimer() {
 
-    clearInterval(timerInterval);
-
-    let previousTime = performance.now();
+    stopTimer();
 
     timerInterval = setInterval(() => {
 
-        const now = performance.now();
-
-        const delta = (now - previousTime) / 1000;
-
-        previousTime = now;
-
-        timer -= delta;
+        timer -= 0.1;
 
         if (timer <= 0) {
 
             timer = 0;
 
-            updateTimer();
+            updateTimerDisplay();
 
-            clearInterval(timerInterval);
-
-            explode();
+            explodeCurrentPlayer();
 
             return;
+
         }
 
-        updateTimer();
+        updateTimerDisplay();
 
-    }, 20);
+    }, 100);
 
 }
 
 
-/* =====================================================
+/* ==================================================
+   タイマー停止
+================================================== */
+
+function stopTimer() {
+
+    if (timerInterval !== null) {
+
+        clearInterval(timerInterval);
+
+        timerInterval = null;
+
+    }
+
+}
+
+
+/* ==================================================
    タイマー表示
-===================================================== */
+================================================== */
 
-function updateTimer() {
+function updateTimerDisplay() {
 
-    const timerText = document.getElementById("timerText");
-    const timerBar = document.getElementById("timerBar");
+    document.getElementById("timer").textContent =
+        timer.toFixed(1);
 
-    timerText.textContent = timer.toFixed(2);
+    const percent =
+        (timer / MAX_TIME) * 100;
 
-    const percentage =
-        Math.max(0, Math.min(100, (timer / MAX_TIME) * 100));
-
-    timerBar.style.width = percentage + "%";
-
-
-    /*
-       残り時間によって警告
-    */
-
-    if (timer <= 3) {
-
-        timerText.style.color = "#ff5555";
-
-    } else if (timer <= 5) {
-
-        timerText.style.color = "#ffaa00";
-
-    } else {
-
-        timerText.style.color = "#fff";
-
-    }
+    document.getElementById("timerBar").style.width =
+        `${Math.max(0, percent)}%`;
 
 }
 
 
-/* =====================================================
-   暗証番号生成
-===================================================== */
-
-function generateCode() {
-
-    currentCode =
-        Math.floor(1000 + Math.random() * 9000).toString();
-
-    document.getElementById("codeDisplay").textContent =
-        currentCode;
-
-}
-
-
-/* =====================================================
-   ミッション回答
-===================================================== */
-
-document.getElementById("answerButton").addEventListener("click", () => {
-
-    const input =
-        document.getElementById("codeInput").value.trim();
-
-    if (input === currentCode) {
-
-        missionClear();
-
-    } else {
-
-        document.getElementById("message").textContent =
-            "❌ 違います！";
-
-    }
-
-});
-
-
-/* =====================================================
-   Enterでも回答
-===================================================== */
-
-document.getElementById("codeInput").addEventListener("keydown", event => {
-
-    if (event.key === "Enter") {
-
-        document.getElementById("answerButton").click();
-
-    }
-
-});
-
-
-/* =====================================================
+/* ==================================================
    ミッション成功
-===================================================== */
+================================================== */
 
-function missionClear() {
+function missionSuccess() {
 
-    clearInterval(timerInterval);
+    if (inputLocked) {
+        return;
+    }
 
-    players[currentPlayerIndex].clears++;
+    inputLocked = true;
 
-    clearCount++;
+    stopTimer();
+
 
     /*
-       +1秒
-       最大15秒
+       成功したら+1秒。
+       最大15秒。
     */
 
     timer = Math.min(timer + 1, MAX_TIME);
 
-    document.getElementById("successTime").textContent =
-        `残り時間 ${timer.toFixed(2)}秒`;
+    updateTimerDisplay();
 
-    showScreen(screens.success);
+    showScreen("successScreen");
 
 
     setTimeout(() => {
 
         nextPlayer();
 
-    }, 900);
+    }, 700);
 
 }
 
 
-/* =====================================================
+/* ==================================================
    次のプレイヤー
-===================================================== */
+================================================== */
 
 function nextPlayer() {
 
-    const nextIndex = findNextAlivePlayer();
-
-    if (nextIndex === -1) {
+    if (!gameRunning) {
         return;
     }
 
+
+    let nextIndex =
+        findNextAlivePlayer(currentPlayerIndex);
+
+
+    /*
+       生き残っているプレイヤーが
+       1人だけならゲーム終了。
+    */
+
+    if (countAlivePlayers() <= 1) {
+
+        finishGame();
+
+        return;
+
+    }
+
+
     currentPlayerIndex = nextIndex;
 
-    rotateToPlayer();
+    setRotationForPlayer(currentPlayerIndex);
 
-    showPassScreen();
+    startPlayerTurn();
 
 }
 
 
-/* =====================================================
-   生存している次のプレイヤー
-===================================================== */
+/* ==================================================
+   次の生存プレイヤー
+================================================== */
 
-function findNextAlivePlayer() {
+function findNextAlivePlayer(startIndex) {
 
-    for (let i = 1; i <= players.length; i++) {
+    let index = startIndex;
 
-        const index =
-            (currentPlayerIndex + i) % players.length;
+    for (let i = 0; i < players.length; i++) {
+
+        index++;
+
+        if (index >= players.length) {
+            index = 0;
+        }
 
         if (players[index].alive) {
-
             return index;
-
         }
 
     }
 
-    return -1;
+    return startIndex;
 
 }
 
 
-/* =====================================================
-   画面回転
-===================================================== */
+/* ==================================================
+   爆発
+================================================== */
 
-function rotateToPlayer() {
+function explodeCurrentPlayer() {
 
-    /*
-       プレイヤーの座席位置に合わせて回転
-
-       2人：
-       0 → 180
-
-       3人：
-       0 → 90 → 180
-
-       4人：
-       0 → 90 → 180 → 270
-
-       常に90°単位。
-    */
-
-    if (playerCount === 2) {
-
-        rotation += 180;
-
-    } else {
-
-        rotation += 90;
-
+    if (!gameRunning) {
+        return;
     }
 
-    rotation %= 360;
+    inputLocked = true;
 
-    setRotation(rotation);
+    stopTimer();
 
-}
+    players[currentPlayerIndex].alive = false;
 
-
-function setRotation(degrees) {
-
-    document.getElementById("gameRotator").style.transform =
-        `rotate(${degrees}deg)`;
-
-}
-
-
-/* =====================================================
-   爆発
-===================================================== */
-
-function explode() {
-
-    clearInterval(timerInterval);
-
-    const player = players[currentPlayerIndex];
-
-    player.alive = false;
-
-    document.getElementById("explodedPlayer").textContent =
-        player.name + "さん";
-
-    showScreen(screens.explosion);
-
-
-    setTimeout(() => {
-
-        checkGameEnd();
-
-    }, 1800);
-
-}
-
-
-/* =====================================================
-   ゲーム終了判定
-===================================================== */
-
-function checkGameEnd() {
-
-    const alivePlayers =
-        players.filter(player => player.alive);
 
     /*
-       最後の1人
+       脱落順位を記録
     */
 
-    if (alivePlayers.length === 1) {
+    const eliminatedCount =
+        players.filter(player => !player.alive).length;
 
-        showResult();
+    players[currentPlayerIndex].eliminatedRank =
+        players.length - eliminatedCount + 1;
+
+
+    document.getElementById("explosionPlayer").textContent =
+        `${players[currentPlayerIndex].name}さん`;
+
+    showScreen("explosionScreen");
+
+}
+
+
+/* ==================================================
+   爆発後
+================================================== */
+
+document.getElementById("explosionNextButton").addEventListener("click", () => {
+
+    /*
+       残り1人なら終了。
+    */
+
+    if (countAlivePlayers() <= 1) {
+
+        finishGame();
 
         return;
 
     }
 
 
-    /*
-       まだゲーム続行
-    */
+    currentPlayerIndex =
+        findNextAlivePlayer(currentPlayerIndex);
 
-    const nextIndex = findNextAlivePlayer();
+    setRotationForPlayer(currentPlayerIndex);
 
-    currentPlayerIndex = nextIndex;
+    inputLocked = false;
 
-    rotateToPlayer();
-
-    showPassScreen();
-
-}
-
-
-/* =====================================================
-   結果
-===================================================== */
-
-function showResult() {
-
-    const alivePlayers =
-        players.filter(player => player.alive);
-
-    const winner = alivePlayers[0];
-
-    document.getElementById("resultWinner").textContent =
-        `🏆 ${winner.name}さんの優勝！`;
-
-
-    const ranking = document.getElementById("ranking");
-
-    ranking.innerHTML = "";
-
-
-    /*
-       生存者 → 1位
-       それ以外 → 脱落した順を逆にして順位
-    */
-
-    const eliminated =
-        players.filter(player => !player.alive);
-
-
-    const rankingPlayers =
-        [winner, ...eliminated.reverse()];
-
-
-    rankingPlayers.forEach((player, index) => {
-
-        const row = document.createElement("div");
-
-        row.className = "rank-row";
-
-        const number = document.createElement("div");
-
-        number.className = "rank-number";
-
-        number.textContent =
-            `${index + 1}位`;
-
-        const name = document.createElement("div");
-
-        name.className = "rank-name";
-
-        name.textContent =
-            player.name;
-
-        const status = document.createElement("div");
-
-        status.className = "rank-status";
-
-        status.textContent =
-            `解除 ${player.clears}回`;
-
-        row.appendChild(number);
-        row.appendChild(name);
-        row.appendChild(status);
-
-        ranking.appendChild(row);
-
-    });
-
-
-    showScreen(screens.result);
-
-}
-
-
-/* =====================================================
-   もう一度
-===================================================== */
-
-document.getElementById("retryButton").addEventListener("click", () => {
-
-    currentPlayerIndex = 0;
-
-    rotation = 0;
-
-    clearCount = 0;
-
-    players.forEach(player => {
-
-        player.alive = true;
-        player.clears = 0;
-
-    });
-
-    setRotation(0);
-
-    showPassScreen();
+    startPlayerTurn();
 
 });
 
 
-/* =====================================================
-   タイトルへ
-===================================================== */
+/* ==================================================
+   生存人数
+================================================== */
 
-document.getElementById("titleButton").addEventListener("click", () => {
+function countAlivePlayers() {
 
-    clearInterval(timerInterval);
+    return players.filter(player => player.alive).length;
 
-    playerCount = 0;
+}
 
-    players = [];
+
+/* ==================================================
+   ゲーム終了
+================================================== */
+
+function finishGame() {
+
+    gameRunning = false;
+
+    stopTimer();
+
+    /*
+       最後に残った人
+    */
+
+    const winner =
+        players.find(player => player.alive);
+
+
+    document.getElementById("winnerText").textContent =
+        `🏆 ${winner.name}さんの勝利！`;
+
+
+    createRanking();
+
+    document.getElementById("gameScreen").style.transform =
+        "rotate(0deg)";
+
+
+    showScreen("resultScreen");
+
+}
+
+
+/* ==================================================
+   ランキング
+================================================== */
+
+function createRanking() {
+
+    const container =
+        document.getElementById("ranking");
+
+    container.innerHTML = "";
+
+
+    const sortedPlayers =
+        [...players].sort((a, b) => {
+
+            if (a.alive) {
+                return -1;
+            }
+
+            if (b.alive) {
+                return 1;
+            }
+
+            return a.eliminatedRank - b.eliminatedRank;
+
+        });
+
+
+    sortedPlayers.forEach((player, index) => {
+
+        const row =
+            document.createElement("div");
+
+        row.className = "rank-row";
+
+
+        let rank;
+
+        if (player.alive) {
+            rank = "🥇";
+        } else {
+            rank = `${index + 1}位`;
+        }
+
+
+        row.innerHTML = `
+            <span>${rank}</span>
+            <span>${player.name}</span>
+        `;
+
+
+        container.appendChild(row);
+
+    });
+
+}
+
+
+/* ==================================================
+   もう一度
+================================================== */
+
+document.getElementById("againButton").addEventListener("click", () => {
+
+    players.forEach(player => {
+
+        player.alive = true;
+        player.eliminatedRank = null;
+
+    });
+
 
     currentPlayerIndex = 0;
 
-    rotation = 0;
+    timer = START_TIME;
 
-    clearCount = 0;
+    setRotationForPlayer(0);
 
-    setRotation(0);
+    document.getElementById("firstTurnText").textContent =
+        `${players[0].name}さんの番！`;
 
-    showScreen(screens.title);
+    showScreen("firstTurnScreen");
+
+});
+
+
+/* ==================================================
+   ================================================
+   エンドレスモード
+   ================================================
+================================================== */
+
+
+/* ==================================================
+   エンドレス開始
+================================================== */
+
+document.getElementById("endlessStartButton").addEventListener("click", () => {
+
+    startEndlessGame();
+
+});
+
+
+function startEndlessGame() {
+
+    stopEndlessTimer();
+
+    endlessRunning = true;
+    endlessInputLocked = false;
+
+    endlessTimer = START_TIME;
+    endlessScore = 0;
+    endlessInput = "";
+
+    document.getElementById("endlessScore").textContent =
+        endlessScore;
+
+    updateEndlessTimerDisplay();
+
+    generateEndlessMission();
+
+    showScreen("endlessGameScreen");
+
+    startEndlessTimer();
+
+}
+
+
+/* ==================================================
+   エンドレスミッション
+================================================== */
+
+function generateEndlessMission() {
+
+    endlessCode =
+        Math.floor(1000 + Math.random() * 9000)
+        .toString();
+
+    endlessInput = "";
+
+    document.getElementById("endlessCodeDisplay").textContent =
+        endlessCode;
+
+    updateEndlessInputDisplay();
+
+}
+
+
+/* ==================================================
+   エンドレス入力表示
+================================================== */
+
+function updateEndlessInputDisplay() {
+
+    let display = "";
+
+    for (let i = 0; i < 4; i++) {
+
+        if (endlessInput[i]) {
+            display += endlessInput[i];
+        } else {
+            display += "_";
+        }
+
+    }
+
+    document.getElementById("endlessInputDisplay").textContent =
+        display;
+
+}
+
+
+/* ==================================================
+   エンドレスキーパッド
+================================================== */
+
+document.querySelectorAll(".endless-key").forEach(button => {
+
+    button.addEventListener("click", () => {
+
+        const key = button.dataset.key;
+
+        handleEndlessKey(key);
+
+    });
+
+});
+
+
+function handleEndlessKey(key) {
+
+    if (!endlessRunning || endlessInputLocked) {
+        return;
+    }
+
+
+    if (key === "backspace") {
+
+        endlessInput =
+            endlessInput.slice(0, -1);
+
+        updateEndlessInputDisplay();
+
+        return;
+    }
+
+
+    if (endlessInput.length >= 4) {
+        return;
+    }
+
+
+    endlessInput += key;
+
+    updateEndlessInputDisplay();
+
+}
+
+
+/* ==================================================
+   エンドレス確認
+================================================== */
+
+document.getElementById("endlessConfirmButton").addEventListener("click", () => {
+
+    if (!endlessRunning || endlessInputLocked) {
+        return;
+    }
+
+    if (endlessInput.length !== 4) {
+        return;
+    }
+
+
+    if (endlessInput === endlessCode) {
+
+        endlessMissionSuccess();
+
+    }
+
+});
+
+
+/* ==================================================
+   エンドレスタイマー
+================================================== */
+
+function startEndlessTimer() {
+
+    stopEndlessTimer();
+
+    endlessTimerInterval =
+        setInterval(() => {
+
+            endlessTimer -= 0.1;
+
+            if (endlessTimer <= 0) {
+
+                endlessTimer = 0;
+
+                updateEndlessTimerDisplay();
+
+                endEndlessGame();
+
+                return;
+
+            }
+
+            updateEndlessTimerDisplay();
+
+        }, 100);
+
+}
+
+
+/* ==================================================
+   エンドレスタイマー停止
+================================================== */
+
+function stopEndlessTimer() {
+
+    if (endlessTimerInterval !== null) {
+
+        clearInterval(endlessTimerInterval);
+
+        endlessTimerInterval = null;
+
+    }
+
+}
+
+
+/* ==================================================
+   エンドレスタイマー表示
+================================================== */
+
+function updateEndlessTimerDisplay() {
+
+    document.getElementById("endlessTimer").textContent =
+        endlessTimer.toFixed(1);
+
+    const percent =
+        (endlessTimer / MAX_TIME) * 100;
+
+    document.getElementById("endlessTimerBar").style.width =
+        `${Math.max(0, percent)}%`;
+
+}
+
+
+/* ==================================================
+   エンドレス成功
+================================================== */
+
+function endlessMissionSuccess() {
+
+    if (endlessInputLocked) {
+        return;
+    }
+
+    endlessInputLocked = true;
+
+    endlessTimer = Math.min(
+        endlessTimer + 1,
+        MAX_TIME
+    );
+
+    endlessScore++;
+
+    document.getElementById("endlessScore").textContent =
+        endlessScore;
+
+    updateEndlessTimerDisplay();
+
+
+    setTimeout(() => {
+
+        endlessInputLocked = false;
+
+        generateEndlessMission();
+
+    }, 150);
+
+}
+
+
+/* ==================================================
+   エンドレス終了
+================================================== */
+
+function endEndlessGame() {
+
+    if (!endlessRunning) {
+        return;
+    }
+
+    endlessRunning = false;
+
+    endlessInputLocked = true;
+
+    stopEndlessTimer();
+
+
+    document.getElementById("endlessFinalScore").textContent =
+        endlessScore;
+
+
+    let newBest = false;
+
+
+    if (endlessScore > endlessBest) {
+
+        endlessBest = endlessScore;
+
+        localStorage.setItem(
+            "bombRelayEndlessBest",
+            endlessBest
+        );
+
+        newBest = true;
+
+    }
+
+
+    if (newBest) {
+
+        document.getElementById("newBestText").textContent =
+            "🎉 NEW BEST! 🎉";
+
+    } else {
+
+        document.getElementById("newBestText").textContent =
+            `BEST：${endlessBest} CLEAR`;
+
+    }
+
+
+    showScreen("endlessResultScreen");
+
+}
+
+
+/* ==================================================
+   エンドレスもう一度
+================================================== */
+
+document.getElementById("endlessRetryButton").addEventListener("click", () => {
+
+    startEndlessGame();
 
 });
