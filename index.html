@@ -9,28 +9,33 @@
 
 <body>
 
-    <!-- =========================
-         タイトル画面
-    ========================== -->
-    <div id="titleScreen" class="screen active">
-        <div class="title-content">
-            <div class="bomb-icon">💣</div>
-            <h1>爆弾リレー</h1>
-            <p>爆弾を解除して、次の人へ渡せ！</p>
+    <div id="game">
 
-            <button id="startButton" class="main-button">
-                START
-            </button>
-        </div>
-    </div>
+        <!-- =========================
+             タイトル画面
+        ========================== -->
+        <section id="titleScreen" class="screen active">
+            <div class="title-content">
+                <div class="bomb-icon">💣</div>
+                <h1>爆弾リレー</h1>
+                <p>爆発する前にミッションをクリアしろ！</p>
+
+                <button id="multiModeButton" class="main-button">
+                    👥 2〜4人対戦
+                </button>
+
+                <button id="endlessModeButton" class="main-button secondary-button">
+                    ♾️ エンドレス
+                </button>
+            </div>
+        </section>
 
 
-    <!-- =========================
-         人数選択
-    ========================== -->
-    <div id="playerCountScreen" class="screen">
-        <div class="content">
-            <h2>👥 何人で遊ぶ？</h2>
+        <!-- =========================
+             人数選択
+        ========================== -->
+        <section id="playerCountScreen" class="screen">
+            <h2>何人で遊ぶ？</h2>
 
             <div class="count-buttons">
                 <button class="count-button" data-count="2">2人</button>
@@ -38,277 +43,369 @@
                 <button class="count-button" data-count="4">4人</button>
             </div>
 
-            <button class="back-button" id="countBackButton">
+            <button id="backToTitleButton" class="back-button">
                 ← 戻る
             </button>
-        </div>
-    </div>
+        </section>
 
 
-    <!-- =========================
-         名前入力
-    ========================== -->
-    <div id="nameScreen" class="screen">
-        <div class="content">
-            <h2>👤 プレイヤー名</h2>
-            <p class="sub-text">名前を入力してください</p>
+        <!-- =========================
+             名前入力
+        ========================== -->
+        <section id="nameScreen" class="screen">
+            <h2>名前を入力</h2>
 
             <div id="nameInputs"></div>
 
             <button id="nameNextButton" class="main-button">
                 次へ
             </button>
-
-            <button class="back-button" id="nameBackButton">
-                ← 戻る
-            </button>
-        </div>
-    </div>
+        </section>
 
 
-    <!-- =========================
-         座席確認
-    ========================== -->
-    <div id="seatScreen" class="screen">
-        <div class="content seat-content">
+        <!-- =========================
+             座席確認
+        ========================== -->
+        <section id="seatScreen" class="screen">
+            <h2>座席を確認</h2>
 
-            <h2>🪑 座る場所を決めよう</h2>
-
-            <p class="sub-text">
-                スマホを中央に置いて、<br>
-                この配置で座ってください
+            <p class="small-text">
+                スマホを中央に置いて、この配置で座ってください
             </p>
 
             <div id="seatMap" class="seat-map">
+                <div id="seatTop" class="seat seat-top"></div>
+                <div id="seatRight" class="seat seat-right"></div>
+                <div id="seatBottom" class="seat seat-bottom"></div>
+                <div id="seatLeft" class="seat seat-left"></div>
 
-                <div id="seatTop" class="seat top"></div>
-                <div id="seatRight" class="seat right"></div>
-                <div id="seatBottom" class="seat bottom"></div>
-                <div id="seatLeft" class="seat left"></div>
-
-                <div class="phone">
+                <div class="device">
                     📱
                 </div>
-
             </div>
 
-            <div id="turnOrder" class="turn-order"></div>
-
             <button id="seatNextButton" class="main-button">
-                準備OK！
+                準備OK
             </button>
-
-        </div>
-    </div>
+        </section>
 
 
-    <!-- =========================
-         ルール説明
-    ========================== -->
-    <div id="ruleScreen" class="screen">
-        <div class="content">
-
-            <div class="bomb-icon small">💣</div>
-
+        <!-- =========================
+             ルール説明
+        ========================== -->
+        <section id="ruleScreen" class="screen">
             <h2>ルール</h2>
 
-            <div class="rules">
-                <p>💣 爆弾を持った人はミッションに挑戦</p>
-                <p>✅ 成功すると<strong>+1秒</strong></p>
-                <p>⏱️ 残り時間は最大<strong>15秒</strong></p>
+            <div class="rule-box">
+                <p>💣 最初の時間は <strong>10秒</strong></p>
+                <p>⏱️ ミッション成功で <strong>+1秒</strong></p>
+                <p>🚨 時間は最大 <strong>15秒</strong></p>
+                <p>☠️ 0秒になると爆発して脱落</p>
                 <p>🔄 成功したら次の人へ</p>
-                <p>💥 0秒になると爆発して脱落</p>
                 <p>🏆 最後まで残った人が優勝</p>
             </div>
 
-            <button id="gameStartButton" class="main-button">
-                💣 ゲーム開始
+            <button id="ruleNextButton" class="main-button">
+                ゲーム開始
             </button>
-
-        </div>
-    </div>
+        </section>
 
 
-    <!-- =========================
-         プレイヤー交代画面
-    ========================== -->
-    <div id="passScreen" class="screen">
-        <div class="content">
+        <!-- =========================
+             最初だけ表示する番画面
+        ========================== -->
+        <section id="firstTurnScreen" class="screen">
+            <div class="turn-bomb">💣</div>
 
-            <div class="pass-icon">🔄</div>
-
-            <p class="pass-label">次のプレイヤー</p>
-
-            <h2 id="passPlayerName">
-                プレイヤー
+            <h2 id="firstTurnText">
+                ○○さんの番！
             </h2>
 
             <p>
-                スマホを<br>
-                <strong>自分の方向</strong>に向けてください
+                スマホを渡して準備しよう
             </p>
 
-            <button id="receiveButton" class="main-button">
-                💣 爆弾を受け取る
+            <button id="firstTurnStartButton" class="main-button">
+                スタート
             </button>
-
-        </div>
-    </div>
+        </section>
 
 
-    <!-- =========================
-         ゲーム画面
-    ========================== -->
-    <div id="gameScreen" class="screen">
+        <!-- =========================
+             ゲーム画面
+        ========================== -->
+        <section id="gameScreen" class="screen">
 
-        <div id="gameRotator">
-
-            <div class="game-ui">
-
-                <div class="player-header">
-                    <span>💣</span>
+            <div class="game-header">
+                <div>
                     <span id="currentPlayerName">プレイヤー</span>
+                    <span>の番</span>
                 </div>
 
-                <div class="timer-area">
+                <div class="timer-box">
+                    <span id="timer">10.0</span>
+                    <span>秒</span>
+                </div>
+            </div>
 
-                    <div id="timerText">
-                        10.00
-                    </div>
+            <div class="timer-bar">
+                <div id="timerBar"></div>
+            </div>
 
-                    <div class="timer-bar">
-                        <div id="timerBar"></div>
-                    </div>
+            <div class="bomb-area">
+                <div id="bomb" class="bomb">
+                    💣
+                </div>
+            </div>
 
+            <div class="mission-box">
+
+                <div class="mission-title">
+                    🔐 コードを入力しろ！
                 </div>
 
-                <div class="mission-area">
+                <div id="codeDisplay" class="code-display">
+                    ____
+                </div>
 
-                    <div class="mission-label">
-                        MISSION
-                    </div>
+                <div id="inputDisplay" class="input-display">
+                    _
+                </div>
 
-                    <div id="missionText" class="mission-text">
-                        暗証番号を入力せよ！
-                    </div>
+                <div class="keypad">
 
-                    <div id="codeDisplay" class="code-display">
-                        1234
-                    </div>
+                    <button class="key-button" data-key="1">1</button>
+                    <button class="key-button" data-key="2">2</button>
+                    <button class="key-button" data-key="3">3</button>
 
-                    <input
-                        id="codeInput"
-                        class="code-input"
-                        type="number"
-                        inputmode="numeric"
-                        placeholder="暗証番号"
-                        autocomplete="off"
-                    >
+                    <button class="key-button" data-key="4">4</button>
+                    <button class="key-button" data-key="5">5</button>
+                    <button class="key-button" data-key="6">6</button>
 
-                    <button id="answerButton" class="answer-button">
-                        確認
+                    <button class="key-button" data-key="7">7</button>
+                    <button class="key-button" data-key="8">8</button>
+                    <button class="key-button" data-key="9">9</button>
+
+                    <button class="key-button special" data-key="backspace">
+                        ⌫
                     </button>
 
-                    <div id="message" class="message"></div>
+                    <button class="key-button" data-key="0">0</button>
 
-                </div>
+                    <button id="confirmButton" class="key-button confirm">
+                        ✓
+                    </button>
 
-                <div class="status-area">
-                    解除回数：<span id="clearCount">0</span>
                 </div>
 
             </div>
-
-        </div>
-
-    </div>
+        </section>
 
 
-    <!-- =========================
-         成功画面
-    ========================== -->
-    <div id="successScreen" class="screen">
-
-        <div class="content result-animation">
+        <!-- =========================
+             成功画面
+        ========================== -->
+        <section id="successScreen" class="screen">
 
             <div class="success-icon">
-                ✅
+                ✓
             </div>
 
-            <h2>SUCCESS!</h2>
+            <h2>MISSION CLEAR!</h2>
 
-            <div class="bonus">
+            <div class="plus-time">
                 +1秒
             </div>
 
-            <p id="successTime">
-                残り時間
-            </p>
-
-        </div>
-
-    </div>
+        </section>
 
 
-    <!-- =========================
-         爆発画面
-    ========================== -->
-    <div id="explosionScreen" class="screen explosion-screen">
+        <!-- =========================
+             爆発画面
+        ========================== -->
+        <section id="explosionScreen" class="screen">
 
-        <div class="explosion-content">
-
-            <div class="explosion">
+            <div class="explosion-icon">
                 💥
             </div>
 
-            <h1>BOOM!</h1>
+            <h2 id="explosionPlayer">
+                ○○
+            </h2>
 
-            <p id="explodedPlayer">
-                プレイヤー
-            </p>
+            <p>爆発した！</p>
 
-            <p>
-                脱落！
-            </p>
+            <button id="explosionNextButton" class="main-button">
+                次へ
+            </button>
 
-        </div>
-
-    </div>
+        </section>
 
 
-    <!-- =========================
-         結果画面
-    ========================== -->
-    <div id="resultScreen" class="screen">
+        <!-- =========================
+             対戦結果
+        ========================== -->
+        <section id="resultScreen" class="screen">
 
-        <div class="content">
-
-            <div class="trophy">
+            <div class="result-icon">
                 🏆
             </div>
 
-            <h1>GAME RESULT</h1>
+            <h2>ゲーム終了！</h2>
 
-            <div id="resultWinner" class="winner"></div>
+            <div id="winnerText" class="winner-text"></div>
 
             <div id="ranking" class="ranking"></div>
 
-            <div class="result-buttons">
+            <button id="againButton" class="main-button">
+                もう一度遊ぶ
+            </button>
 
-                <button id="retryButton" class="main-button">
-                    🔄 もう一度
-                </button>
+            <button id="titleButton" class="back-button">
+                タイトルへ
+            </button>
 
-                <button id="titleButton" class="back-button">
-                    🏠 タイトルへ
-                </button>
+        </section>
 
+
+        <!-- =========================
+             エンドレス開始
+        ========================== -->
+        <section id="endlessStartScreen" class="screen">
+
+            <div class="endless-icon">
+                ♾️
             </div>
 
-        </div>
+            <h2>エンドレスモード</h2>
+
+            <p>
+                1人でどこまで<br>
+                ミッションをクリアできるか挑戦！
+            </p>
+
+            <div class="best-box">
+                BEST<br>
+                <strong id="endlessBestStart">0</strong>
+                CLEAR
+            </div>
+
+            <button id="endlessStartButton" class="main-button">
+                挑戦する
+            </button>
+
+            <button id="endlessBackButton" class="back-button">
+                ← 戻る
+            </button>
+
+        </section>
+
+
+        <!-- =========================
+             エンドレスゲーム
+        ========================== -->
+        <section id="endlessGameScreen" class="screen">
+
+            <div class="game-header">
+                <div>
+                    ♾️ ENDLESS
+                </div>
+
+                <div class="timer-box">
+                    <span id="endlessTimer">10.0</span>
+                    <span>秒</span>
+                </div>
+            </div>
+
+            <div class="timer-bar">
+                <div id="endlessTimerBar"></div>
+            </div>
+
+            <div class="endless-score">
+                CLEAR
+                <strong id="endlessScore">0</strong>
+            </div>
+
+            <div class="bomb-area">
+                <div id="endlessBomb" class="bomb">
+                    💣
+                </div>
+            </div>
+
+            <div class="mission-box">
+
+                <div class="mission-title">
+                    🔐 コードを入力しろ！
+                </div>
+
+                <div id="endlessCodeDisplay" class="code-display">
+                    ____
+                </div>
+
+                <div id="endlessInputDisplay" class="input-display">
+                    _
+                </div>
+
+                <div class="keypad">
+
+                    <button class="endless-key key-button" data-key="1">1</button>
+                    <button class="endless-key key-button" data-key="2">2</button>
+                    <button class="endless-key key-button" data-key="3">3</button>
+
+                    <button class="endless-key key-button" data-key="4">4</button>
+                    <button class="endless-key key-button" data-key="5">5</button>
+                    <button class="endless-key key-button" data-key="6">6</button>
+
+                    <button class="endless-key key-button" data-key="7">7</button>
+                    <button class="endless-key key-button" data-key="8">8</button>
+                    <button class="endless-key key-button" data-key="9">9</button>
+
+                    <button class="endless-key key-button special" data-key="backspace">
+                        ⌫
+                    </button>
+
+                    <button class="endless-key key-button" data-key="0">0</button>
+
+                    <button id="endlessConfirmButton" class="endless-key key-button confirm">
+                        ✓
+                    </button>
+
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- =========================
+             エンドレスゲームオーバー
+        ========================== -->
+        <section id="endlessResultScreen" class="screen">
+
+            <div class="explosion-icon">
+                💥
+            </div>
+
+            <h2>GAME OVER</h2>
+
+            <div class="endless-final-score">
+                <span>あなたの記録</span>
+                <strong id="endlessFinalScore">0</strong>
+                <span>CLEAR</span>
+            </div>
+
+            <div id="newBestText" class="new-best"></div>
+
+            <button id="endlessRetryButton" class="main-button">
+                もう一度
+            </button>
+
+            <button id="endlessTitleButton" class="back-button">
+                タイトルへ
+            </button>
+
+        </section>
 
     </div>
-
 
     <script src="script.js"></script>
 </body>
